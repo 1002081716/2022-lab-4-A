@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta charset="UTF-8">
+<title>מטריצת חקר ניסוי</title>
+
+<style>
+body{
+    direction: rtl;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+    line-height: 1.6;
+}
+table{
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 20px;
+}
+th, td{
+    border: 1px solid #333;
+    padding: 12px;
+    text-align: center;
+}
+th{
+    background: #f0f0f0;
+}
+.cell{
+    cursor: pointer;
+    transition: background 0.2s;
+    min-width: 40px;
+}
+.cell:hover {
+    background: #f9f9f9;
+}
+.cell.checked{
+    background: #cfe2ff;
+    font-weight: bold;
+    font-size: 18px;
+}
+.correct{
+    background: #c8e6c9 !important;
+}
+.wrong{
+    background: #f8c8c8 !important;
+}
+button {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+}
+button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+#result {
+    font-weight: bold;
+    margin-top: 15px;
+    font-size: 1.2em;
+}
+</style>
+</head>
+
+<body>
+
+<h2>מטריצת התאמת רכיבי ניסוי –בניית עמילן</h2>
+<p>יש לבחור תשובה אחת לכל שורה. כפתור הבדיקה יופעל רק לאחר מילוי כל הטבלה.</p>
+
+<table id="matrix">
+<tr>
+    <th>הרכיב הניסויי</th>
+    <th>המשתנה התלוי</th>
+    <th>דרך המדידה</th>
+    <th>המשתנה הבלתי תלוי</th>
+    <th>דרך השינוי</th>
+    <th>גורם קבוע</th>
+    <th>בקרה</th>
+</tr>
+
+<tr>
+    <th>מבחנה ללא תסנין</th>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="true"></td>
+</tr>
+
+<tr>
+    <th>צבע טיפת היוד</th>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="true"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+</tr>
+
+    <tr>
+    <th>מספר טיפות תסנין</th>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="true"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+</tr>
+    
+<tr>
+    <th>נפח גלוקוז פוספאט</th>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="true"></td>
+    <td class="cell" data-correct="false"></td>
+</tr>
+
+<tr>
+    <th>נפח הטיפות בכל שקע</th>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="true"></td>
+    <td class="cell" data-correct="false"></td>
+</tr>
+
+<tr>
+    <th>נפח תסנין</th>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="true"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+</tr>
+
+<tr>
+    <th>קצב בניית עמילן/ קצב פעילות אנזים</th>
+    <td class="cell" data-correct="true"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+    <td class="cell" data-correct="false"></td>
+</tr>
+</table>
+
+<button id="checkBtn" onclick="checkAnswers()" disabled>בדוק תשובות</button>
+<button onclick="clearMatrix()">נקה</button>
+
+<p id="result"></p>
+
+<script>
+const cells = document.querySelectorAll('.cell');
+const checkBtn = document.getElementById('checkBtn');
+const rowsCount = document.querySelectorAll('#matrix tr').length - 1; // פחות הכותרת
+
+cells.forEach(cell => {
+    cell.addEventListener('click', () => {
+        // מציאת השורה הנוכחית של התא שנלחץ
+        const currentRow = cell.parentElement;
+        
+        // הסרת הבחירה מכל התאים באותה שורה בלבד
+        currentRow.querySelectorAll('.cell').forEach(c => {
+            c.classList.remove('checked');
+            c.textContent = '';
+        });
+
+        // סימון התא הנוכחי
+        cell.classList.add('checked');
+        cell.textContent = '✔';
+        
+        validateForm();
+    });
+});
+
+function validateForm() {
+    const checkedCount = document.querySelectorAll('.cell.checked').length;
+    // כפתור הבדיקה יופעל רק אם מספר הסימונים שווה למספר השורות
+    checkBtn.disabled = (checkedCount < rowsCount);
+}
+
+function checkAnswers(){
+    let correct = 0;
+    let total = 0;
+
+    cells.forEach(cell => {
+        const should = cell.dataset.correct === "true";
+        const isChecked = cell.classList.contains('checked');
+
+        cell.classList.remove('correct','wrong');
+
+        if (should){
+            total++;
+            if (isChecked){
+                cell.classList.add('correct');
+                correct++;
+            } else {
+                cell.classList.add('wrong');
+            }
+        } else if (isChecked){
+            cell.classList.add('wrong');
+        }
+    });
+
+    const resultMsg = (correct === total) ? "כל הכבוד! הכל נכון." : "יש טעויות, נסה לתקן.";
+    document.getElementById("result").innerText = `ציון: ${correct} מתוך ${total}. ${resultMsg}`;
+}
+
+function clearMatrix(){
+    cells.forEach(cell => {
+        cell.classList.remove('checked','correct','wrong');
+        cell.textContent = '';
+    });
+    document.getElementById("result").innerText = '';
+    validateForm();
+}
+</script>
+
+</body>
+</html>
